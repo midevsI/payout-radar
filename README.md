@@ -1,4 +1,4 @@
-This is a template for a whop app built in NextJS. Fork it and keep the parts you need for your app.
+Payout Radar is a self-hosted Next.js Whop app that polls bounty budgets and warns creators and active workers before a bounty closes.
 
 # Whop NextJS App Template
 
@@ -17,6 +17,12 @@ To run this project:
 4. Go to a whop created in the same org as the app you created. Navigate to the tools section and add your app.
 
 5. Run `pnpm dev` to start the dev server. Then in the top right of the window find a translucent settings icon. Select "localhost". The default port 3000 should work.
+
+## Production setup
+
+This app is intended for Vercel hosting (not `whop.app` hosting). Create a Supabase project, run `db/schema.sql` in its SQL editor, and configure `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, and `WHOP_PRO_PLAN_ID` in Vercel. Keep the service-role key server-only. Vercel uses `vercel.json` to call `/api/cron/poll` every 15 minutes.
+
+In the Whop developer dashboard, grant `bounty:basic:read`, `notification:create`, and `forum:post:create`. The cron route uses the beta `/bounties` and `/bounty_submissions` endpoints only; no bounty webhooks are used.
 
 ## Deploying
 
