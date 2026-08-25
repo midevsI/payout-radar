@@ -1,14 +1,16 @@
 import { headers } from "next/headers";
 import { whopsdk } from "@/lib/whop-sdk";
-import { getCreatorSettings, getPlanTier, getTrackedBounties } from "@/lib/db";
+import { getCreatorSettings, getTrackedBounties } from "@/lib/db";
+import { getPlanTier } from "@/lib/plan";
 import { listBounties } from "@/lib/bounty-api";
+import type { Bounty } from "@/lib/bounty-types";
 import { PostMortemToggle, ThresholdForm } from "./DashboardClient";
 
 export default async function DashboardPage({ params }: { params: Promise<{ companyId: string }> }) {
 	const { companyId } = await params;
 	await whopsdk.verifyUserToken(await headers());
 	const [tracked, tier, thresholds] = await Promise.all([getTrackedBounties(companyId), getPlanTier(companyId), getCreatorSettings(companyId)]);
-	const bounties = (await Promise.all(tracked.map(async (row) => (await listBounties(companyId, row.last_status)).find((bounty) => bounty.id === row.bounty_id)))).filter(Boolean);
+	const bounties = (await Promise.all(tracked.map(async (row) => (await listBounties(companyId, row.last_status)).find((bounty) => bounty.id === row.bounty_id)))).filter((bounty): bounty is Bounty => Boolean(bounty));
 	return <main className="p-8 max-w-4xl mx-auto space-y-6">
 		<header><p className="text-sm text-gray-600">Payout Radar</p><h1 className="text-3xl font-bold">Bounty runway</h1><p className="text-gray-600">Know when campaign budget is about to run out.</p></header>
 		{tier === "pro" && <section className="rounded border p-4"><h2 className="font-semibold mb-3">Threshold alerts</h2><ThresholdForm accountId={companyId} initial={thresholds} /></section>}

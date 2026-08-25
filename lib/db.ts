@@ -29,7 +29,7 @@ async function supabaseRequest<T>(table: string, init: RequestInit = {}, query =
 
 export async function getTrackedBounties(accountId?: string) {
 	const filter = accountId ? `&account_id=eq.${encodeURIComponent(accountId)}` : "";
-	return supabaseRequest<TrackedBounty[]>("tracked_bounty", {}, `?select=*&order=account_id,bounty_id${filter}`);
+	return (await supabaseRequest<TrackedBounty[]>("tracked_bounty", {}, `?select=*&order=account_id,bounty_id${filter}`)) ?? [];
 }
 
 export async function upsertTrackedBounty(accountId: string, bountyId: string, planTier: "free" | "pro") {
@@ -52,7 +52,7 @@ export async function updateTrackedBounty(
 
 export async function getCreatorSettings(accountId: string) {
 	const data = await supabaseRequest<{ threshold_pcts: number[] }[]>("creator_settings", {}, `?select=threshold_pcts&account_id=eq.${encodeURIComponent(accountId)}&limit=1`);
-	return data[0]?.threshold_pcts ?? [20];
+	return data?.[0]?.threshold_pcts ?? [20];
 }
 
 export async function saveCreatorSettings(accountId: string, thresholdPcts: number[]) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createForumReply, createNotification, listBounties, listInFlightSubmissions, updateForumPost } from "@/lib/bounty-api";
-import { getCreatorSettings, getPlanTier, getTrackedBounties, updateTrackedBounty } from "@/lib/db";
+import { getCreatorSettings, getTrackedBounties, updateTrackedBounty } from "@/lib/db";
+import { getPlanTier } from "@/lib/plan";
 import type { Bounty } from "@/lib/bounty-types";
 
 export const dynamic = "force-dynamic";
