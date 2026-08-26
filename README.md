@@ -20,7 +20,9 @@ To run this project:
 
 ## Production setup
 
-This app is intended for Vercel hosting (not `whop.app` hosting). Create a Supabase project, run `db/schema.sql` in its SQL editor, and configure `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, and `WHOP_PRO_PLAN_ID` in Vercel. Keep the service-role key server-only. Vercel uses `vercel.json` to call `/api/cron/poll` every 15 minutes.
+This app is intended for Vercel hosting (not `whop.app` hosting). Create a Supabase project, run `db/schema.sql` in its SQL editor, and configure `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, and `WHOP_PRO_PLAN_ID` in Vercel. Keep the service-role key server-only.
+
+Vercel Hobby does not support 15-minute Cron Jobs, so schedule `https://your-domain.vercel.app/api/cron/poll` every 15 minutes with [cron-job.org](https://cron-job.org). Configure an `Authorization` header with the value `Bearer <CRON_SECRET>`. The endpoint rejects requests without that header.
 
 In the Whop developer dashboard, grant `bounty:basic:read`, `notification:create`, and `forum:post:create`. The cron route uses the beta `/bounties` and `/bounty_submissions` endpoints only; no bounty webhooks are used.
 
