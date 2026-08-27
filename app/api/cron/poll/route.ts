@@ -64,25 +64,35 @@ export async function GET(request: Request) {
 	if (configuredSecret && !validSecret) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
+	let stage = "loading tracked bounties";
 	try {
 		const tracked = await getTrackedBounties();
 		for (const accountId of [...new Set(tracked.map((row) => row.account_id))]) {
+			stage = `checking plan for account ${accountId}`;
 			const tier = await getPlanTier(accountId);
 			const rows = tracked.filter((row) => row.account_id === accountId);
+			stage = `loading open bounties for account ${accountId}`;
 			const open = await listBounties(accountId, "open");
+			stage = `loading completed bounties for account ${accountId}`;
 			const terminal = (await Promise.all(["closed", "completed", "canceled"].map((status) => listBounties(accountId, status)))).flat();
 			for (const bounty of open) {
 				const row = rows.find((item) => item.bounty_id === bounty.id);
-				if (row) await processOpenBounty(bounty, row, tier === "pro");
+				if (row) {
+					stage = `processing open bounty ${bounty.id}`;
+					await processOpenBounty(bounty, row, tier === "pro");
+				}
 			}
 			for (const bounty of terminal) {
 				const row = rows.find((item) => item.bounty_id === bounty.id);
-				if (row) await processClosedBounty(bounty, row, tier === "pro");
+				if (row) {
+					stage = `processing closed bounty ${bounty.id}`;
+					await processClosedBounty(bounty, row, tier === "pro");
+				}
 			}
 		}
 		return NextResponse.json({ ok: true });
 	} catch (error) {
-		console.error("[CRON POLL FAILED]", error);
-		return NextResponse.json({ error: "Polling failed. Check Vercel function logs." }, { status: 500 });
+		console.error("[CRON POLL FAILED]", { stage, error });
+		return NextResponse.json({ error: `Polling failed during ${stage}. Check Vercel function logs.` }, { status: 500 });
 	}
 }
