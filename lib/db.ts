@@ -46,6 +46,14 @@ export async function upsertTrackedBounty(accountId: string, bountyId: string, p
 	}, "?on_conflict=bounty_id");
 }
 
+export async function deleteTrackedBounty(accountId: string, bountyId: string) {
+	await supabaseRequest(
+		"tracked_bounty",
+		{ method: "DELETE", headers: { Prefer: "return=minimal" } },
+		`?account_id=eq.${encodeURIComponent(accountId)}&bounty_id=eq.${encodeURIComponent(bountyId)}`,
+	);
+}
+
 export async function updateTrackedBounty(
 	bountyId: string,
 	values: Partial<Pick<TrackedBounty, "last_status" | "thresholds_notified" | "budget_bar_comment_id" | "post_mortem_posted">>,
