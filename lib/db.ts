@@ -13,6 +13,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 async function supabaseRequest<T>(table: string, init: RequestInit = {}, query = "") {
+	if (!supabaseUrl || !supabaseUrl.startsWith("https://") || !serviceRoleKey) {
+		throw new Error("Supabase environment variables are missing or invalid");
+	}
 	const response = await fetch(`${supabaseUrl}/rest/v1/${table}${query}`, {
 		...init,
 		headers: {
