@@ -57,7 +57,11 @@ async function processClosedBounty(bounty: Bounty, tracked: Awaited<ReturnType<t
 }
 
 export async function GET(request: Request) {
-	if (process.env.CRON_SECRET && request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+	const configuredSecret = process.env.CRON_SECRET;
+	const authorization = request.headers.get("authorization");
+	const cronSecretHeader = request.headers.get("x-cron-secret");
+	const validSecret = authorization === `Bearer ${configuredSecret}` || cronSecretHeader === configuredSecret;
+	if (configuredSecret && !validSecret) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	const tracked = await getTrackedBounties();

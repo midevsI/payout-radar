@@ -24,6 +24,8 @@ This app is intended for Vercel hosting (not `whop.app` hosting). Create a Supab
 
 Vercel Hobby does not support 15-minute Cron Jobs, so schedule `https://your-domain.vercel.app/api/cron/poll` every 15 minutes with [cron-job.org](https://cron-job.org). Configure an `Authorization` header with the value `Bearer <CRON_SECRET>`. The endpoint rejects requests without that header.
 
+Alternatively, use the included GitHub Actions workflow. Add repository secrets named `PAYOUT_RADAR_POLL_URL` (the full endpoint URL) and `CRON_SECRET`; it runs every 15 minutes and can also be triggered manually. GitHub schedules may be delayed during high-load periods. cron-job.org may also send the secret as an `X-Cron-Secret` header.
+
 In the Whop developer dashboard, grant `bounty:basic:read`, `notification:create`, and `forum:post:create`. The cron route uses the beta `/bounties` and `/bounty_submissions` endpoints only; no bounty webhooks are used.
 
 ## Deploying
