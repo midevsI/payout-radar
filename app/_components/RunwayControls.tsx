@@ -7,46 +7,65 @@ export function ThresholdForm({ accountId, initial }: { accountId: string; initi
 	const [value, setValue] = useState(initial.join(","));
 	const [saved, setSaved] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	return <form className="flex gap-2 items-center" onSubmit={async (event) => {
-		event.preventDefault();
-		setSaved(null);
-		setError(null);
-		const values = value
-			.split(",")
-			.map((item) => Number(item.trim()))
-			.filter((item) => Number.isInteger(item) && item > 0 && item <= 100);
-		if (values.length === 0) {
-			setError("Use one or more values from 1-100, comma-separated.");
-			return;
-		}
-		const uniqueSorted = [...new Set(values)].sort((a, b) => a - b);
-		const response = await fetch("/api/settings", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ accountId, thresholds: uniqueSorted }),
-		});
-		if (!response.ok) {
-			setError("Could not save thresholds.");
-			return;
-		}
-		setSaved("Saved");
-		setValue(uniqueSorted.join(","));
-	}}>
-		<label htmlFor="thresholds">Alert at (%)</label>
-		<input id="thresholds" className="border rounded px-2 py-1 w-32" value={value} onChange={(event) => setValue(event.target.value)} />
-		<button className="rounded bg-black text-white px-3 py-1" type="submit">Save</button>
-		{saved && <span className="text-sm text-green-700">{saved}</span>}
-		{error && <span className="text-sm text-red-700">{error}</span>}
-	</form>;
+
+	return (
+		<form
+			className="flex flex-wrap gap-2 items-center"
+			onSubmit={async (event) => {
+				event.preventDefault();
+				setSaved(null);
+				setError(null);
+				const values = value
+					.split(",")
+					.map((item) => Number(item.trim()))
+					.filter((item) => Number.isInteger(item) && item > 0 && item <= 100);
+				if (values.length === 0) {
+					setError("Use one or more values from 1-100, comma-separated.");
+					return;
+				}
+				const uniqueSorted = [...new Set(values)].sort((a, b) => a - b);
+				const response = await fetch("/api/settings", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ accountId, thresholds: uniqueSorted }),
+				});
+				if (!response.ok) {
+					setError("Could not save thresholds.");
+					return;
+				}
+				setSaved("Saved");
+				setValue(uniqueSorted.join(","));
+			}}
+		>
+			<label htmlFor="thresholds" className="text-sm text-gray-700">Alert at (%)</label>
+			<input id="thresholds" className="border rounded-lg px-3 py-1.5 w-40 bg-white" value={value} onChange={(event) => setValue(event.target.value)} />
+			<button className="rounded-lg bg-black text-white px-3 py-1.5 disabled:opacity-60" type="submit">Save</button>
+			{saved && <span className="text-sm text-green-700">{saved}</span>}
+			{error && <span className="text-sm text-red-700">{error}</span>}
+		</form>
+	);
 }
 
 export function PostMortemToggle({ accountId, bountyId, enabled }: { accountId: string; bountyId: string; enabled: boolean }) {
 	const [checked, setChecked] = useState(enabled);
-	return <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={checked} onChange={async (event) => {
-		const next = event.target.checked;
-		setChecked(next);
-		await fetch("/api/settings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accountId, bountyId, autoPostMortem: next }) });
-	}} /> Auto post-mortem</label>;
+	return (
+		<label className="flex gap-2 items-center text-sm text-gray-700">
+			<input
+				type="checkbox"
+				checked={checked}
+				onChange={async (event) => {
+					const next = event.target.checked;
+					setChecked(next);
+					await fetch("/api/settings", {
+						method: "POST",
+						headers: { "content-type": "application/json" },
+						body: JSON.stringify({ accountId, bountyId, autoPostMortem: next }),
+					});
+				}}
+			/>
+			Auto post-mortem
+		</label>
+	);
 }
 
 export function TrackBountyForm({
@@ -89,7 +108,7 @@ export function TrackBountyForm({
 			}}
 		>
 			<select
-				className="border rounded px-2 py-1 min-w-64"
+				className="border rounded-lg px-3 py-1.5 min-w-64 bg-white"
 				value={selectedBounty}
 				onChange={(event) => setSelectedBounty(event.target.value)}
 				disabled={!canTrackMore || candidates.length === 0}
@@ -101,11 +120,7 @@ export function TrackBountyForm({
 					</option>
 				))}
 			</select>
-			<button
-				className="rounded bg-black text-white px-3 py-1 disabled:opacity-60"
-				type="submit"
-				disabled={!canTrackMore || candidates.length === 0}
-			>
+			<button className="rounded-lg bg-black text-white px-3 py-1.5 disabled:opacity-60" type="submit" disabled={!canTrackMore || candidates.length === 0}>
 				Track bounty
 			</button>
 			{message && <span className="text-sm text-green-700">{message}</span>}
@@ -114,20 +129,14 @@ export function TrackBountyForm({
 	);
 }
 
-export function UntrackButton({
-	accountId,
-	bountyId,
-}: {
-	accountId: string;
-	bountyId: string;
-}) {
+export function UntrackButton({ accountId, bountyId }: { accountId: string; bountyId: string }) {
 	const router = useRouter();
 	const [pending, setPending] = useState(false);
 
 	return (
 		<button
 			type="button"
-			className="rounded border px-2 py-1 text-sm disabled:opacity-60"
+			className="rounded-lg border px-2.5 py-1 text-sm bg-white hover:bg-gray-50 disabled:opacity-60"
 			disabled={pending}
 			onClick={async () => {
 				setPending(true);
