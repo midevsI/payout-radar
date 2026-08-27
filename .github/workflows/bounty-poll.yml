@@ -15,8 +15,10 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           set -eu
-          test -n "$POLL_URL"
-          test -n "$CRON_SECRET"
+          : "${POLL_URL:?PAYOUT_RADAR_POLL_URL is not configured}"
+          : "${CRON_SECRET:?CRON_SECRET is not configured}"
+          echo "::add-mask::$POLL_URL"
+          echo "::add-mask::$CRON_SECRET"
           curl --fail-with-body --silent --show-error \
             --retry 2 --request GET "$POLL_URL" \
             --header "Authorization: Bearer $CRON_SECRET"
