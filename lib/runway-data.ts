@@ -1,4 +1,4 @@
-import { listBounties } from "@/lib/bounty-api";
+import { listBountiesByStatuses, listBountiesSafe } from "@/lib/bounty-api";
 import type { Bounty } from "@/lib/bounty-types";
 import { getCreatorSettings, getTrackedBounties } from "@/lib/db";
 import { getPlanTier, type PlanTier } from "@/lib/plan";
@@ -25,18 +25,16 @@ export type RunwayData = {
 };
 
 export async function getRunwayData(companyId: string): Promise<RunwayData> {
-	const [tracked, tier, thresholds, open, closed, completed, canceled] = await Promise.all([
+	const [tracked, tier, thresholds, open, terminal] = await Promise.all([
 		getTrackedBounties(companyId),
 		getPlanTier(companyId),
 		getCreatorSettings(companyId),
-		listBounties(companyId, "open"),
-		listBounties(companyId, "closed"),
-		listBounties(companyId, "completed"),
-		listBounties(companyId, "canceled"),
+		listBountiesSafe(companyId, "open"),
+		listBountiesByStatuses(companyId, ["closed", "completed", "canceled", "scheduled"]),
 	]);
 
 	const trackedSet = new Set(tracked.map((row) => row.bounty_id));
-	const allBounties = [...open, ...closed, ...completed, ...canceled];
+	const allBounties = [...open, ...terminal];
 	const bountyById = new Map(allBounties.map((bounty) => [bounty.id, bounty]));
 	const trackedBounties = tracked
 		.map((row) => ({

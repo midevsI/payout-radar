@@ -1,4 +1,4 @@
-export type BountyStatus = "scheduled" | "open" | "closed" | "completed" | "canceled";
+export type BountyStatus = "scheduled" | "open" | "closed" | "completed" | "canceled" | "cancelled";
 
 export type Bounty = {
 	id: string;

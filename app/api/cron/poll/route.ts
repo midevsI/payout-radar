@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createForumReply, createNotification, listBounties, listInFlightSubmissions, updateForumPost } from "@/lib/bounty-api";
+import { createForumReply, createNotification, listBountiesByStatuses, listBountiesSafe, listInFlightSubmissions, updateForumPost } from "@/lib/bounty-api";
 import { getCreatorSettings, getTrackedBounties, updateTrackedBounty } from "@/lib/db";
 import { getPlanTier } from "@/lib/plan";
 import type { Bounty } from "@/lib/bounty-types";
@@ -72,9 +72,9 @@ export async function GET(request: Request) {
 			const tier = await getPlanTier(accountId);
 			const rows = tracked.filter((row) => row.account_id === accountId);
 			stage = `loading open bounties for account ${accountId}`;
-			const open = await listBounties(accountId, "open");
+			const open = await listBountiesSafe(accountId, "open");
 			stage = `loading completed bounties for account ${accountId}`;
-			const terminal = (await Promise.all(["closed", "completed", "canceled"].map((status) => listBounties(accountId, status)))).flat();
+			const terminal = await listBountiesByStatuses(accountId, ["closed", "completed", "canceled"]);
 			for (const bounty of open) {
 				const row = rows.find((item) => item.bounty_id === bounty.id);
 				if (row) {
